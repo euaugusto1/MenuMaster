@@ -11,8 +11,11 @@ RUN npm ci
 # Copy all project files
 COPY . .
 
-# Build the application
+# Build the frontend
 RUN npm run build
+
+# Build the production server (não usando o script padrão para evitar dependências do Vite)
+RUN npx esbuild server/production-entry.ts server/routes.ts server/storage.ts server/vite.ts server/db.ts shared/schema.ts --platform=node --bundle --format=esm --outdir=dist
 
 # Production stage
 FROM node:20-alpine
@@ -22,8 +25,8 @@ WORKDIR /app
 # Copy package files for production
 COPY package.json package-lock.json ./
 
-# Install production dependencies only
-RUN npm ci --omit=dev
+# Install all dependencies (incluindo as de desenvolvimento necessárias para o Vite)
+RUN npm ci
 
 # Copy build artifacts from build stage
 COPY --from=build /app/dist /app/dist
