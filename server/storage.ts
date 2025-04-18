@@ -4,6 +4,8 @@ import {
   categories, type Category, type InsertCategory,
   cartItems, type CartItem, type InsertCartItem
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, asc } from "drizzle-orm";
 
 // Storage interface
 export interface IStorage {
@@ -32,119 +34,123 @@ export interface IStorage {
   clearCart(): Promise<boolean>;
 }
 
-// Memory storage implementation
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private productsMap: Map<number, Product>;
-  private categoriesMap: Map<number, Category>;
-  private cartItemsMap: Map<number, CartItem>;
-  
-  private userId = 1;
-  private productId = 1;
-  private categoryId = 1;
-  private cartItemId = 1;
-
-  constructor() {
-    this.users = new Map();
-    this.productsMap = new Map();
-    this.categoriesMap = new Map();
-    this.cartItemsMap = new Map();
-  }
-
-  // User methods (kept from original)
+// Database storage implementation
+export class DatabaseStorage implements IStorage {
+  // User methods
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.userId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
 
   // Product methods
   async getProducts(): Promise<Product[]> {
-    return Array.from(this.productsMap.values());
+    return db.select().from(products).orderBy(asc(products.name));
   }
 
   async getProductById(id: number): Promise<Product | undefined> {
-    return this.productsMap.get(id);
+    const [product] = await db.select().from(products).where(eq(products.id, id));
+    return product;
   }
 
-  async getProductsByCategory(category: string): Promise<Product[]> {
-    return Array.from(this.productsMap.values()).filter(
-      (product) => product.category === category
-    );
+  async getProductsByCategory(categorySlug: string): Promise<Product[]> {
+    const [category] = await db
+      .select()
+      .from(categories)
+      .where(eq(categories.slug, categorySlug));
+
+    if (!category) {
+      return [];
+    }
+
+    return db
+      .select()
+      .from(products)
+      .where(eq(products.categoryId, category.id))
+      .orderBy(asc(products.name));
   }
 
   async getFeaturedProducts(): Promise<Product[]> {
-    return Array.from(this.productsMap.values()).filter(
-      (product) => product.featured
-    );
+    return db
+      .select()
+      .from(products)
+      .where(eq(products.featured, true))
+      .orderBy(asc(products.name));
   }
 
   async createProduct(insertProduct: InsertProduct): Promise<Product> {
-    const id = this.productId++;
-    const product: Product = { ...insertProduct, id };
-    this.productsMap.set(id, product);
+    const [product] = await db
+      .insert(products)
+      .values(insertProduct)
+      .returning();
     return product;
   }
 
   // Category methods
   async getCategories(): Promise<Category[]> {
-    return Array.from(this.categoriesMap.values());
+    return db.select().from(categories).orderBy(asc(categories.name));
   }
 
   async getCategoryBySlug(slug: string): Promise<Category | undefined> {
-    return Array.from(this.categoriesMap.values()).find(
-      (category) => category.slug === slug
-    );
+    const [category] = await db
+      .select()
+      .from(categories)
+      .where(eq(categories.slug, slug));
+    return category;
   }
 
   async createCategory(insertCategory: InsertCategory): Promise<Category> {
-    const id = this.categoryId++;
-    const category: Category = { ...insertCategory, id };
-    this.categoriesMap.set(id, category);
+    const [category] = await db
+      .insert(categories)
+      .values(insertCategory)
+      .returning();
     return category;
   }
 
   // Cart methods
   async getCartItems(): Promise<CartItem[]> {
-    return Array.from(this.cartItemsMap.values());
+    return db.select().from(cartItems);
   }
 
   async addCartItem(insertCartItem: InsertCartItem): Promise<CartItem> {
-    const id = this.cartItemId++;
-    const cartItem: CartItem = { ...insertCartItem, id };
-    this.cartItemsMap.set(id, cartItem);
+    const [cartItem] = await db
+      .insert(cartItems)
+      .values(insertCartItem)
+      .returning();
     return cartItem;
   }
 
   async updateCartItemQuantity(id: number, quantity: number): Promise<CartItem | undefined> {
-    const cartItem = this.cartItemsMap.get(id);
-    if (!cartItem) return undefined;
-    
-    const updatedItem: CartItem = { ...cartItem, quantity };
-    this.cartItemsMap.set(id, updatedItem);
+    const [updatedItem] = await db
+      .update(cartItems)
+      .set({ quantity })
+      .where(eq(cartItems.id, id))
+      .returning();
     return updatedItem;
   }
 
   async removeCartItem(id: number): Promise<boolean> {
-    return this.cartItemsMap.delete(id);
+    const result = await db.delete(cartItems).where(eq(cartItems.id, id));
+    return result.count > 0;
   }
 
   async clearCart(): Promise<boolean> {
-    this.cartItemsMap.clear();
+    await db.delete(cartItems);
     return true;
   }
 }
 
-// Export storage instance
-export const storage = new MemStorage();
+// Export storage instance - now using the database
+export const storage = new DatabaseStorage();
