@@ -1,0 +1,186 @@
+// src/pages/Home/Home.module.scss
+.homePage {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  
+  .main {
+    flex-grow: 1;
+  }
+  
+  .hero {
+    background-color: #FF6B6B;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/images/hero-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    padding: 3rem 0;
+    margin-bottom: 2rem;
+    
+    .heroContent {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+      color: white;
+      
+      h1 {
+        font-size: 3rem;
+        margin-bottom: 1.5rem;
+        
+        @media (max-width: 768px) {
+          font-size: 2rem;
+        }
+      }
+      
+      p {
+        font-size: 1.125rem;
+        margin-bottom: 1.5rem;
+        
+        @media (max-width: 768px) {
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    width: 100%;
+  }
+  
+  .categoriesSection {
+    padding: 2rem 0;
+    
+    h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+  }
+  
+  .featuredSection {
+    padding: 2rem 0;
+    background-color: #FFF0F0;
+    
+    h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    
+    .featuredGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+  }
+  
+  .productsSection {
+    padding: 2rem 0 4rem;
+    
+    h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    
+    .productsGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+  }
+  
+  .footer {
+    background-color: #333;
+    color: white;
+    padding: 1.5rem 0;
+    text-align: center;
+    
+    p {
+      margin: 0;
+    }
+  }
+}
+
+// Adicionar css global para o modal
+:global(.modal-open) {
+  overflow: hidden;
+}
+
+// src/components/CategoryList/CategoryList.module.scss
+.categoryList {
+  margin-bottom: 2rem;
+  
+  .categoriesContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    
+    @media (max-width: 768px) {
+      flex-direction: row;
+      overflow-x: auto;
+      padding-bottom: 1rem;
+      justify-content: flex-start;
+      flex-wrap: nowrap;
+    }
+  }
+  
+  .categoryItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 1rem;
+    border-radius: 12px;
+    width: 120px;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    
+    @media (max-width: 768px) {
+      width: 100px;
+      flex: 0 0 auto;
+    }
+    
+    &:hover, &.active {
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    &.active {
+      background-color: #FF6B6B;
+      
+      .categoryName {
+        color: white;
+      }
+    }
+    
+    .categoryImage {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+      
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+    
+    .categoryName {
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-align: center;
+      margin: 0;
+      transition: color 0.3s ease;
+    }
+  }
+}

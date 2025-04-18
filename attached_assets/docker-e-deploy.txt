@@ -1,0 +1,348 @@
+// Dockerfile
+FROM node:16-alpine as build
+
+WORKDIR /app
+
+# Copiar arquivos de dependências
+COPY package.json package-lock.json ./
+
+# Instalar dependências
+RUN npm ci
+
+# Copiar arquivos do projeto
+COPY . .
+
+# Construir a aplicação
+RUN npm run build
+
+# Estágio de produção
+FROM nginx:alpine
+
+# Copiar arquivos de build para o nginx
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Copiar configuração personalizada do nginx (se necessário)
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expor porta 80
+EXPOSE 80
+
+# Iniciar nginx
+CMD ["nginx", "-g", "daemon off;"]
+
+// Instruções para deploy
+/*
+# Instruções para Deploy do Projeto "NOSSO CARDÁPIO"
+
+## 1. Preparação do Projeto para Deploy
+
+Antes de fazer o deploy da aplicação, certifique-se de que:
+
+1. Todas as dependências estão instaladas corretamente
+2. A aplicação está funcionando localmente sem erros
+3. As variáveis de ambiente estão configuradas corretamente (se necessário)
+
+## 2. Deploy no GitHub Pages
+
+1. Instale o pacote gh-pages:
+   ```
+   npm install --save-dev gh-pages
+   ```
+
+2. Adicione os seguintes scripts no seu package.json:
+   ```json
+   "predeploy": "npm run build",
+   "deploy": "gh-pages -d build"
+   ```
+
+3. Adicione a propriedade "homepage" no seu package.json:
+   ```json
+   "homepage": "https://seu-usuario.github.io/nosso-cardapio"
+   ```
+
+4. Execute o comando de deploy:
+   ```
+   npm run deploy
+   ```
+
+## 3. Deploy na Vercel
+
+1. Crie uma conta na Vercel (https://vercel.com)
+2. Instale a CLI da Vercel:
+   ```
+   npm install -g vercel
+   ```
+
+3. Faça login pela CLI:
+   ```
+   vercel login
+   ```
+
+4. Deploy do projeto:
+   ```
+   vercel
+   ```
+
+5. Para fazer o deploy em produção:
+   ```
+   vercel --prod
+   ```
+
+## 4. Deploy na Netlify
+
+1. Crie uma conta na Netlify (https://netlify.com)
+2. Instale a CLI da Netlify:
+   ```
+   npm install -g netlify-cli
+   ```
+
+3. Faça login pela CLI:
+   ```
+   netlify login
+   ```
+
+4. Inicialize o projeto com Netlify:
+   ```
+   netlify init
+   ```
+
+5. Deploy do projeto:
+   ```
+   netlify deploy
+   ```
+
+6. Para fazer o deploy em produção:
+   ```
+   netlify deploy --prod
+   ```
+
+## 5. Deploy com Docker
+
+### 5.1 Construindo a imagem Docker
+
+1. Certifique-se de ter o Docker instalado em sua máquina
+2. Construa a imagem Docker:
+   ```
+   docker build -t nosso-cardapio .
+   ```
+
+3. Execute o container localmente para testar:
+   ```
+   docker run -p 8080:80 nosso-cardapio
+   ```
+
+4. Acesse http://localhost:8080 para verificar se a aplicação está funcionando
+
+### 5.2 Deploy no Heroku com Docker
+
+1. Instale a CLI do Heroku e faça login:
+   ```
+   heroku login
+   heroku container:login
+   ```
+
+2. Crie uma aplicação no Heroku:
+   ```
+   heroku create nosso-cardapio
+   ```
+
+3. Construa e envie a imagem para o Heroku:
+   ```
+   heroku container:push web -a nosso-cardapio
+   ```
+
+4. Publique a imagem:
+   ```
+   heroku container:release web -a nosso-cardapio
+   ```
+
+5. Acesse a aplicação:
+   ```
+   heroku open -a nosso-cardapio
+   ```
+
+### 5.3 Deploy na AWS Fargate
+
+1. Instale e configure a AWS CLI
+2. Crie um repositório no ECR (Elastic Container Registry):
+   ```
+   aws ecr create-repository --repository-name nosso-cardapio
+   ```
+
+3. Faça login no ECR:
+   ```
+   aws ecr get-login-password | docker login --username AWS --password-stdin [seu-id-aws].dkr.ecr.[regiao].amazonaws.com
+   ```
+
+4. Construa e envie a imagem para o ECR:
+   ```
+   docker build -t [seu-id-aws].dkr.ecr.[regiao].amazonaws.com/nosso-cardapio:latest .
+   docker push [seu-id-aws].dkr.ecr.[regiao].amazonaws.com/nosso-cardapio:latest
+   ```
+
+5. Crie uma definição de tarefa para o Fargate, um cluster e um serviço usando o AWS Management Console ou a AWS CLI
+
+### 5.4 Deploy no EasyPanel
+
+1. Acesse o painel do EasyPanel e faça login
+2. Crie um novo aplicativo e selecione a opção "Docker"
+3. Configure o aplicativo para usar a imagem do Docker Hub ou de um registro privado
+4. Configure as variáveis de ambiente necessárias
+5. Inicie o aplicativo
+
+## 6. Configuração de Domínio Personalizado
+
+Após o deploy, você pode configurar um domínio personalizado em qualquer uma das plataformas:
+
+1. Adquira um domínio (GoDaddy, Namecheap, etc.)
+2. Configure os registros DNS para apontar para o serviço onde você hospedou a aplicação
+3. Configure o domínio personalizado no painel da plataforma de hospedagem
+
+## 7. Manutenção e Atualizações
+
+Para atualizar a aplicação após o deploy:
+
+1. Faça as alterações no código
+2. Teste localmente
+3. Faça o commit e push para o repositório
+4. Execute novamente o comando de deploy para a plataforma escolhida
+
+## 8. Monitoramento
+
+Considere configurar ferramentas de monitoramento para acompanhar o desempenho da aplicação:
+
+- Google Analytics para monitoramento de usuários
+- Sentry para monitoramento de erros
+- UptimeRobot para monitoramento de disponibilidade
+
+## 9. Backup do Banco de Dados (se aplicável)
+
+Configure backups regulares do banco de dados para evitar perda de dados.
+*/
+
+// Arquivo README.md
+/*
+# NOSSO CARDÁPIO
+
+Um aplicativo SASS para gerenciamento de cardápio online de restaurantes, desenvolvido com React.
+
+## Descrição
+
+NOSSO CARDÁPIO é uma aplicação web moderna que permite aos restaurantes exibirem seus produtos de forma atraente e interativa. Com design responsivo e uma interface amigável, os clientes podem navegar facilmente pelo menu, visualizar detalhes dos produtos e adicionar itens ao carrinho.
+
+## Funcionalidades
+
+- Exibição de produtos por categorias
+- Seção de produtos em destaque
+- Detalhes do produto em modal
+- Seleção de opções (tamanhos, variações)
+- Carrinho de compras com gerenciamento de quantidade
+- Design responsivo para mobile, tablet e desktop
+
+## Tecnologias Utilizadas
+
+- React.js
+- Sass
+- Framer Motion (para animações)
+- React Router
+- Context API
+
+## Pré-requisitos
+
+- Node.js (versão 14 ou superior)
+- npm ou yarn
+
+## Instalação e Execução
+
+1. Clone o repositório:
+   ```
+   git clone https://github.com/seu-usuario/nosso-cardapio.git
+   cd nosso-cardapio
+   ```
+
+2. Instale as dependências:
+   ```
+   npm install
+   ```
+   ou
+   ```
+   yarn
+   ```
+
+3. Inicie o servidor de desenvolvimento:
+   ```
+   npm start
+   ```
+   ou
+   ```
+   yarn start
+   ```
+
+4. Acesse a aplicação em [http://localhost:3000](http://localhost:3000)
+
+## Estrutura do Projeto
+
+```
+nosso-cardapio/
+├── public/
+│   ├── images/
+│   └── index.html
+├── src/
+│   ├── assets/
+│   ├── components/
+│   │   ├── Button/
+│   │   ├── CategoryList/
+│   │   ├── Header/
+│   │   ├── MenuItemCard/
+│   │   ├── MenuItemModal/
+│   │   └── Cart/
+│   ├── context/
+│   ├── data/
+│   ├── hooks/
+│   ├── pages/
+│   │   └── Home/
+│   ├── styles/
+│   ├── App.jsx
+│   └── index.js
+├── Dockerfile
+├── package.json
+└── README.md
+```
+
+## Scripts Disponíveis
+
+- `npm start`: Inicia o servidor de desenvolvimento
+- `npm build`: Compila o projeto para produção
+- `npm test`: Executa os testes
+- `npm eject`: Ejeta a configuração do Create React App
+
+## Personalização
+
+Você pode personalizar o NOSSO CARDÁPIO modificando:
+
+- Cores e estilos em `src/styles/abstracts/_variables.scss`
+- Produtos e categorias em `src/data/products.js` e `src/data/categories.js`
+- Componentes visuais conforme necessário
+
+## Deploy
+
+Consulte o arquivo DEPLOY.md para instruções detalhadas sobre como fazer deploy da aplicação.
+
+## Contribuição
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
+3. Faça commit das suas alterações (`git commit -m 'Adiciona nova feature'`)
+4. Faça push para a branch (`git push origin feature/nova-feature`)
+5. Abra um Pull Request
+
+## Licença
+
+Este projeto está licenciado sob a licença MIT - veja o arquivo LICENSE para detalhes.
+
+## Contato
+
+Seu Nome - [seu-email@exemplo.com](mailto:seu-email@exemplo.com)
+
+Link do Projeto: [https://github.com/seu-usuario/nosso-cardapio](https://github.com/seu-usuario/nosso-cardapio)
+*/

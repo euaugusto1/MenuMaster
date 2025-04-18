@@ -1,0 +1,543 @@
+// src/components/MenuItemCard/MenuItemCard.jsx
+import React from 'react';
+import { motion } from 'framer-motion';
+import Button from '../Button/Button';
+import { useCart } from '../../hooks/useCart';
+import styles from './MenuItemCard.module.scss';
+
+const MenuItemCard = ({ product, onClick }) => {
+  const { addToCart } = useCart();
+  
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
+    addToCart({
+      ...product,
+      quantity: 1
+    });
+  };
+  
+  return (
+    <motion.div 
+      className={styles.card}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ y: -10, boxShadow: '0 10px 20px rgba(0, 0, 0, 0.1)' }}
+      onClick={onClick}
+    >
+      <div className={styles.cardContent}>
+        <div className={styles.imageContainer}>
+          <img src={product.image} alt={product.name} />
+          {product.featured && <span className={styles.featuredBadge}>Destaque</span>}
+        </div>
+        
+        <div className={styles.content}>
+          <h3 className={styles.title}>{product.name}</h3>
+          <p className={styles.description}>{product.description}</p>
+          <div className={styles.priceRow}>
+            <span className={styles.price}>
+              R$ {product.price.toFixed(2).replace('.', ',')}
+            </span>
+            <Button onClick={handleAddToCart} variant="primary">
+              EU QUERO
+            </Button>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default MenuItemCard;
+
+// src/components/MenuItemCard/MenuItemCard.module.scss
+.card {
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  height: 100%;
+  
+  &:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .cardContent {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  
+  .imageContainer {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    
+    .featuredBadge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background-color: #FF6B6B;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  }
+  
+  .content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  
+  .title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  
+  .description {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 16px;
+    flex: 1;
+  }
+  
+  .priceRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+  }
+  
+  .price {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+  }
+}
+
+// src/components/MenuItemModal/MenuItemModal.jsx
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Button from '../Button/Button';
+import { useCart } from '../../hooks/useCart';
+import styles from './MenuItemModal.module.scss';
+
+const MenuItemModal = ({ isOpen, onClose, product }) => {
+  const { addToCart } = useCart();
+  const [selectedOptions, setSelectedOptions] = useState({});
+  const [quantity, setQuantity] = useState(1);
+  
+  useEffect(() => {
+    if (isOpen && product) {
+      // Reset states quando o modal abre
+      setQuantity(1);
+      
+      // Inicializar opções se existirem
+      const initialOptions = {};
+      
+      if (product.options) {
+        initialOptions.option = product.options[0];
+      }
+      
+      if (product.sizes) {
+        initialOptions.size = product.sizes[0];
+      }
+      
+      setSelectedOptions(initialOptions);
+      
+      // Adicionar classe para evitar scroll no body quando o modal está aberto
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [isOpen, product]);
+  
+  if (!isOpen || !product) return null;
+  
+  const handleAddToCart = () => {
+    addToCart({
+      ...product,
+      selectedOptions,
+      quantity
+    });
+    
+    onClose();
+  };
+  
+  const backdropVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 }
+  };
+  
+  const modalVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0 }
+  };
+  
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          className={styles.modalBackdrop}
+          variants={backdropVariants}
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+          onClick={onClose}
+        >
+          <motion.div 
+            className={styles.modalContent}
+            variants={modalVariants}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            transition={{ duration: 0.3 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className={styles.closeButton} onClick={onClose}>
+              &times;
+            </button>
+            
+            <div className={styles.modalBody}>
+              <div className={styles.productImage}>
+                <img src={product.image} alt={product.name} />
+                {product.featured && <span className={styles.featuredBadge}>Destaque</span>}
+              </div>
+              
+              <div className={styles.productDetails}>
+                <h2 className={styles.productName}>{product.name}</h2>
+                <p className={styles.productDescription}>{product.description}</p>
+                
+                <div className={styles.productPrice}>
+                  <span>R$ {product.price.toFixed(2).replace('.', ',')}</span>
+                </div>
+                
+                {product.ingredients && (
+                  <div className={styles.ingredients}>
+                    <h3>Ingredientes:</h3>
+                    <ul>
+                      {product.ingredients.map((ingredient, index) => (
+                        <li key={index}>{ingredient}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {product.sizes && (
+                  <div className={styles.options}>
+                    <h3>Tamanho:</h3>
+                    <div className={styles.optionButtons}>
+                      {product.sizes.map(size => (
+                        <button
+                          key={size}
+                          className={`${styles.optionButton} ${selectedOptions.size === size ? styles.selected : ''}`}
+                          onClick={() => setSelectedOptions(prev => ({ ...prev, size }))}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {product.options && (
+                  <div className={styles.options}>
+                    <h3>Opções:</h3>
+                    <div className={styles.optionButtons}>
+                      {product.options.map(option => (
+                        <button
+                          key={option}
+                          className={`${styles.optionButton} ${selectedOptions.option === option ? styles.selected : ''}`}
+                          onClick={() => setSelectedOptions(prev => ({ ...prev, option }))}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <div className={styles.quantity}>
+                  <h3>Quantidade:</h3>
+                  <div className={styles.quantityControls}>
+                    <button 
+                      className={styles.quantityButton}
+                      onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                      disabled={quantity <= 1}
+                    >
+                      -
+                    </button>
+                    <span className={styles.quantityValue}>{quantity}</span>
+                    <button 
+                      className={styles.quantityButton}
+                      onClick={() => setQuantity(prev => prev + 1)}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                
+                <div className={styles.actions}>
+                  <Button onClick={handleAddToCart} fullWidth>
+                    EU QUERO
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+export default MenuItemModal;
+
+// src/components/MenuItemModal/MenuItemModal.module.scss
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.modalContent {
+  background-color: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.closeButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  z-index: 1;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.8);
+  
+  &:hover {
+    background-color: #f0f0f0;
+  }
+}
+
+.modalBody {
+  display: flex;
+  flex-direction: row;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.productImage {
+  width: 50%;
+  position: relative;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 250px;
+  }
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .featuredBadge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background-color: #FF6B6B;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+}
+
+.productDetails {
+  width: 50%;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+.productName {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.productDescription {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.productPrice {
+  font-size: 24px;
+  font-weight: 700;
+  color: #FF6B6B;
+  margin-bottom: 20px;
+}
+
+.ingredients {
+  margin-bottom: 20px;
+  
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  
+  ul {
+    list-style: none;
+    padding: 0;
+    
+    li {
+      margin-bottom: 4px;
+      padding-left: 16px;
+      position: relative;
+      
+      &:before {
+        content: '•';
+        position: absolute;
+        left: 0;
+        color: #FF6B6B;
+      }
+    }
+  }
+}
+
+.options {
+  margin-bottom: 20px;
+  
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  
+  .optionButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    
+    .optionButton {
+      background-color: #f7f7f7;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background-color: #f0f0f0;
+      }
+      
+      &.selected {
+        background-color: #FF6B6B;
+        color: white;
+        border-color: #FF6B6B;
+      }
+    }
+  }
+}
+
+.quantity {
+  margin-bottom: 24px;
+  
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  
+  .quantityControls {
+    display: flex;
+    align-items: center;
+    
+    .quantityButton {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 600;
+      background-color: #f0f0f0;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background-color: #ddd;
+      }
+      
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+    
+    .quantityValue {
+      width: 40px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+    }
+  }
+}
+
+.actions {
+  margin-top: auto;
+}

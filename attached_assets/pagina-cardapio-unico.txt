@@ -1,0 +1,156 @@
+// src/pages/Home/Home.jsx
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Header from '../../components/Header/Header';
+import CategoryList from '../../components/CategoryList/CategoryList';
+import MenuItemCard from '../../components/MenuItemCard/MenuItemCard';
+import MenuItemModal from '../../components/MenuItemModal/MenuItemModal';
+import products from '../../data/products';
+import styles from './Home.module.scss';
+
+const Home = () => {
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  useEffect(() => {
+    // Filtrar produtos por categoria selecionada
+    if (selectedCategory) {
+      setFilteredProducts(products.filter(product => product.category === selectedCategory));
+    } else {
+      setFilteredProducts(products);
+    }
+    
+    // Filtrar produtos em destaque
+    setFeaturedProducts(products.filter(product => product.featured));
+  }, [selectedCategory]);
+  
+  const handleSelectCategory = (categoryId) => {
+    setSelectedCategory(categoryId === selectedCategory ? '' : categoryId);
+    
+    // Scroll para a seção de produtos
+    const productsSection = document.getElementById('products');
+    if (productsSection) {
+      productsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+  
+  const handleProductClick = (product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
+  
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+  
+  return (
+    <div className={styles.homePage}>
+      <Header />
+      
+      <main className={styles.main}>
+        <section className={styles.hero}>
+          <div className={styles.heroContent}>
+            <motion.h1 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              NOSSO CARDÁPIO
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              Pratos deliciosos para todos os gostos. Feitos com ingredientes selecionados e muito carinho.
+            </motion.p>
+          </div>
+        </section>
+        
+        <section className={styles.categoriesSection} id="categorias">
+          <div className={styles.container}>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              Categorias
+            </motion.h2>
+            
+            <CategoryList 
+              onSelectCategory={handleSelectCategory} 
+              selectedCategory={selectedCategory} 
+            />
+          </div>
+        </section>
+        
+        <section className={styles.featuredSection} id="destaques">
+          <div className={styles.container}>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              Destaques
+            </motion.h2>
+            
+            <div className={styles.featuredGrid}>
+              {featuredProducts.map(product => (
+                <MenuItemCard 
+                  key={product.id} 
+                  product={product}
+                  onClick={() => handleProductClick(product)}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+        
+        <section className={styles.productsSection} id="products">
+          <div className={styles.container}>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              {selectedCategory ? `${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}` : 'Todos os Produtos'}
+            </motion.h2>
+            
+            <div className={styles.productsGrid}>
+              <AnimatePresence>
+                {filteredProducts.map(product => (
+                  <MenuItemCard 
+                    key={product.id} 
+                    product={product}
+                    onClick={() => handleProductClick(product)}
+                  />
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
+        </section>
+      </main>
+      
+      <footer className={styles.footer}>
+        <div className={styles.container}>
+          <p>&copy; {new Date().getFullYear()} NOSSO CARDÁPIO - Todos os direitos reservados</p>
+        </div>
+      </footer>
+      
+      {/* Modal para exibir detalhes do produto */}
+      <MenuItemModal 
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        product={selectedProduct}
+      />
+    </div>
+  );
+};
+
+export default Home;
