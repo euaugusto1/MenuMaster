@@ -30,7 +30,26 @@ Antes de fazer o deploy da aplicação, certifique-se de que:
 1. Acesse o painel do EasyPanel e faça login
 2. Crie um novo aplicativo e selecione a opção "Docker"
 3. Configure o aplicativo para usar a imagem do Docker Hub ou de um registro privado
-4. Configure as variáveis de ambiente necessárias
+4. Configure as variáveis de ambiente necessárias:
+
+   **Variáveis de ambiente obrigatórias para o banco de dados PostgreSQL:**
+   ```
+   DATABASE_URL=postgresql://username:password@host:port/database
+   PGUSER=username
+   PGPASSWORD=password
+   PGHOST=host
+   PGPORT=port
+   PGDATABASE=database
+   ```
+   
+   Substitua os valores acima pelos dados de conexão do seu banco de dados PostgreSQL.
+   
+   **Variáveis de ambiente opcionais:**
+   ```
+   NODE_ENV=production
+   PORT=5000
+   ```
+
 5. Inicie o aplicativo
 
 ## 3. Deploy no GitHub Pages

@@ -42,12 +42,38 @@ NOSSO CARDÁPIO é uma aplicação web moderna que permite aos restaurantes exib
    npm install
    ```
 
-3. Inicie o servidor de desenvolvimento:
+3. Configure as variáveis de ambiente:
+   - Crie um arquivo `.env` baseado no arquivo `.env.example`
+   - Preencha as informações do banco de dados PostgreSQL
+
+4. Inicie o servidor de desenvolvimento:
    ```
    npm run dev
    ```
 
-4. Acesse a aplicação no navegador
+5. Acesse a aplicação no navegador
+
+## Variáveis de Ambiente
+
+As seguintes variáveis de ambiente são necessárias para o funcionamento do aplicativo:
+
+### Banco de Dados PostgreSQL
+```
+DATABASE_URL=postgresql://username:password@host:port/database
+PGUSER=username
+PGPASSWORD=password
+PGHOST=host
+PGPORT=port
+PGDATABASE=database
+```
+
+### Configurações da Aplicação
+```
+NODE_ENV=development (ou production)
+PORT=5000
+```
+
+**Importante**: Ao implantar no EasyPanel ou outras plataformas, certifique-se de configurar corretamente todas estas variáveis de ambiente.
 
 ## Instruções para Deploy
 

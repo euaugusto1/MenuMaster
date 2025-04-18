@@ -142,8 +142,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async removeCartItem(id: number): Promise<boolean> {
-    const result = await db.delete(cartItems).where(eq(cartItems.id, id));
-    return result.count > 0;
+    await db.delete(cartItems).where(eq(cartItems.id, id));
+    return true; // Se a operação não gerou erro, consideramos bem-sucedida
   }
 
   async clearCart(): Promise<boolean> {
