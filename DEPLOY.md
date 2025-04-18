@@ -6,7 +6,9 @@ Antes de fazer o deploy da aplicação, certifique-se de que:
 
 1. Todas as dependências estão instaladas corretamente
 2. A aplicação está funcionando localmente sem erros
-3. As variáveis de ambiente estão configuradas corretamente (se necessário)
+3. As variáveis de ambiente estão configuradas corretamente
+
+> **Nota Importante**: O Dockerfile está configurado para incluir todas as dependências (incluindo as de desenvolvimento) para garantir compatibilidade em ambiente de produção. Isso evita problemas como a falta de pacotes como `@vitejs/plugin-react` que são necessários em tempo de execução.
 
 ## 2. Deploy com Docker
 
